@@ -1,0 +1,162 @@
+{
+  "name": "bottleneck_in_airflow_dag_scheduler_causing_task_execution_delays",
+  "description": "This incident type refers to a bottleneck within the Apache Airflow DAG (Directed Acyclic Graph) Scheduler that causes delays in task execution. Apache Airflow is an open-source platform used to programmatically author, schedule, and monitor workflows. The DAG Scheduler is responsible for scheduling tasks based on their dependencies and availability of resources. When a bottleneck occurs within this component, it leads to delays in task executions, which can impact the overall workflow and potentially cause failures. This type of incident requires investigation and resolution to ensure optimal performance and reliability of the Apache Airflow platform.",
+  "params": [
+    {
+      "name": "YOUR_DEPLOYMENT_NAME",
+      "value": ""
+    },
+    {
+      "name": "OTHER_POD_IP",
+      "value": ""
+    },
+    {
+      "name": "DAG_SCHEDULER_POD_NAME",
+      "value": ""
+    },
+    {
+      "name": "YOUR_NAMESPACE",
+      "value": ""
+    },
+    {
+      "name": "NEW_NUMBER_OF_REPLICAS",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Bottleneck in Airflow DAG Scheduler Causing Task Execution Delays\nThis incident type refers to a bottleneck within the Apache Airflow DAG (Directed Acyclic Graph) Scheduler that causes delays in task execution. Apache Airflow is an open-source platform used to programmatically author, schedule, and monitor workflows. The DAG Scheduler is responsible for scheduling tasks based on their dependencies and availability of resources. When a bottleneck occurs within this component, it leads to delays in task executions, which can impact the overall workflow and potentially cause failures. This type of incident requires investigation and resolution to ensure optimal performance and reliability of the Apache Airflow platform."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## List all Apache Airflow Pods running in the cluster"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get pods -l app=airflow`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the logs of the DAG Scheduler Pod"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl logs ${DAG_SCHEDULER_POD_NAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the resource usage of the DAG Scheduler Pod"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl top pod ${DAG_SCHEDULER_POD_NAME}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the status of the Kubernetes Nodes"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get nodes`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the resource usage of the Kubernetes Nodes"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl top node`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU and memory limits set for the DAG Scheduler Pod"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl describe pod ${DAG_SCHEDULER_POD_NAME} | grep -E \"(Limits|Requests)\"`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU and memory usage of the DAG Scheduler Pod over time"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl top pod ${DAG_SCHEDULER_POD_NAME} --containers`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the network connectivity between the DAG Scheduler Pod and other Pods"
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE | `ping ${OTHER_POD_IP}`"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Kubernetes events related to the DAG Scheduler Pod"
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get events --field-selector involvedObject.name=${DAG_SCHEDULER_POD_NAME}`"
+    },
+    {
+      "name": "cell_20",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the number of DAG Scheduler workers to distribute the workload and reduce the bottleneck."
+    },
+    {
+      "name": "cell_21",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_update_deployment_replicas($YOUR_DEPLOYMENT_NAME, $YOUR_NAMESPACE, $NEW_NUMBER_OF_REPLICAS, $NAMESPACE)"
+    }
+  ]
+}
